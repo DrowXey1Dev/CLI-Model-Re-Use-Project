@@ -1,0 +1,3 @@
+C:\Users\mmhkh\OneDrive\Desktop\TypscriptTest\obj\Debug\TypscriptTest.njsproj.AssemblyReference.cache
+C:\Users\mmhkh\OneDrive\Desktop\TypscriptTest\obj\Debug\TypscriptTest.njsproj.CoreCompileInputs.cache
+C:\Users\mmhkh\OneDrive\Desktop\TypscriptTest\bin\Microsoft.NodejsTools.WebRole.dll
