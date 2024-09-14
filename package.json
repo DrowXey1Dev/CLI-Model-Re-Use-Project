@@ -9,16 +9,16 @@
   "scripts": {
     "build": "tsc -p .",
     "start": "npm run build -- -w",
-    "executable": "pkg -o run ./dist/index.js" 
+    "executable": "pkg -o run ./dist/index.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^22.5.5",
+    "pkg": "^5.8.1",
     "typescript": "^5.6.2"
   },
   "dependencies": {
-    "commander": "^12.1.0",
-    "nexe": "^4.0.0-rc.6"
+    "commander": "^12.1.0"
   }
 }
