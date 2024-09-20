@@ -1,4 +1,6 @@
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 
 // GitHub API token from environment variable
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
@@ -93,17 +95,20 @@ async function calculateBusFactorForRepo(githubUrl: string): Promise<string> {
 }
 
 /**
- * Main function to execute the process, calling the Bus Factor calculation for a specific GitHub URL.
+ * Main function to read a list of GitHub URLs from a text file and calculate the Bus Factor for each.
  */
 async function main() {
-  // Hardcoded GitHub repository URL
-  const githubUrl = 'https://github.com/axios/axios';
+  // Path to the file containing GitHub URLs
+  const urlFilePath = path.join(__dirname, 'url_file.txt');
 
-  // Call the function to calculate the Bus Factor and get the result string
-  const result = await calculateBusFactorForRepo(githubUrl);
+  // Read the file and split the content into an array of URLs
+  const urls = fs.readFileSync(urlFilePath, 'utf-8').split('\n').filter(Boolean);  // Removes empty lines
 
-  // Print the result
-  console.log(result);
+  // Loop through each URL and calculate the Bus Factor
+  for (const githubUrl of urls) {
+    const result = await calculateBusFactorForRepo(githubUrl);
+    console.log(result);
+  }
 }
 
 // Run the main function
