@@ -1,7 +1,12 @@
 import axios from 'axios';
 
-// GitHub API token
-const GITHUB_TOKEN = '';
+// GitHub API token from environment variable
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
+if (!GITHUB_TOKEN) {
+  console.error('Error: GITHUB_TOKEN is not set in the environment.');
+  process.exit(1);  // Exit if the token is not provided
+}
 
 // GitHub API base URL
 const GITHUB_API_BASE_URL = 'https://api.github.com';
