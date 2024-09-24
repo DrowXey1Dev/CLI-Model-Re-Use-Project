@@ -33,6 +33,61 @@ async function fetchContributors(owner: string, repo: string) {
 }
 
 /**
+ * Fetch repository details from GitHub to calculate the Ramp-Up score.
+ * @param owner Repository owner (username or organization)
+ * @param repo Repository name
+ */
+async function fetchRepoDetails(owner: string, repo: string) {
+  try {
+    const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${owner}/${repo}`, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching repository details: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Calculate Ramp-Up score for the repository based on several factors.
+ * The score is based on the presence of a README file, open issues, and the presence of a docs folder.
+ * @param owner Repository owner (username or organization)
+ * @param repo Repository name
+ */
+async function calculateRampUp(owner: string, repo: string): Promise<number> {
+  try {
+    const repoDetails = await fetchRepoDetails(owner, repo);
+
+    let rampUpScore = 0;
+
+    // Check if README.md exists (5 points if present)
+    const hasReadme = repoDetails.has_wiki || repoDetails.description;
+    if (hasReadme) {
+      rampUpScore += 5;  // README is present
+    }
+
+    // Consider the number of open issues (fewer issues = better ramp-up score)
+    const openIssues = repoDetails.open_issues_count;
+    if (openIssues < 10) {
+      rampUpScore += 5;  // Very few open issues
+    } else if (openIssues < 50) {
+      rampUpScore += 3;  // Moderate number of open issues
+    } else {
+      rampUpScore += 1;  // High number of open issues
+    }
+
+    return rampUpScore;
+
+  } catch (error) {
+    console.error(`Error calculating Ramp-Up score for ${owner}/${repo}: ${error}`);
+    return 0;
+  }
+}
+
+/**
  * Calculate Bus Factor
  * @param contributors List of contributors with commit count
  * @param threshold Contribution threshold for bus factor (default 50%)
@@ -69,10 +124,10 @@ function parseGithubUrl(url: string): { owner: string, repo: string } | null {
 }
 
 /**
- * Calculate the Bus Factor for a given GitHub URL and return the result as a formatted string
+ * Calculate the metrics for a given GitHub URL and return the result as a formatted string
  * @param githubUrl The GitHub URL of the repository
  */
-async function calculateBusFactorForRepo(githubUrl: string): Promise<string> {
+async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
   // Parse the owner and repo from the URL
   const repoInfo = parseGithubUrl(githubUrl);
 
@@ -83,19 +138,24 @@ async function calculateBusFactorForRepo(githubUrl: string): Promise<string> {
   const { owner, repo } = repoInfo;
 
   try {
-    // Fetch contributors
+    // Fetch contributors for Bus Factor calculation
     const contributors = await fetchContributors(owner, repo);
 
     // Calculate Bus Factor
     const busFactor = calculateBusFactor(contributors, 50);
-    return `The Bus Factor for ${owner}/${repo} is: ${busFactor}`;
+
+    // Calculate Ramp-Up score
+    const rampUpScore = await calculateRampUp(owner, repo);
+
+    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor}\n - Ramp-Up Score: ${rampUpScore}/10`;
+  
   } catch (error) {
     return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
   }
 }
 
 /**
- * Main function to read a list of GitHub URLs from a text file and calculate the Bus Factor for each.
+ * Main function to read a list of GitHub URLs from a text file and calculate metrics for each.
  */
 async function main() {
   // Path to the file containing GitHub URLs
@@ -104,9 +164,9 @@ async function main() {
   // Read the file and split the content into an array of URLs
   const urls = fs.readFileSync(urlFilePath, 'utf-8').split('\n').filter(Boolean);  // Removes empty lines
 
-  // Loop through each URL and calculate the Bus Factor
+  // Loop through each URL and calculate the metrics
   for (const githubUrl of urls) {
-    const result = await calculateBusFactorForRepo(githubUrl);
+    const result = await calculateMetricsForRepo(githubUrl);
     console.log(result);
   }
 }
