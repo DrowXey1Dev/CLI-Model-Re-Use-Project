@@ -1,33 +1,11 @@
 import axios from 'axios';
+import * as Util from './Util';
+import * as API from './api-calls/github-adapter';
+import { calculateCorrectness } from './find-correctness';
 
-// GitHub API token from environment variable
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
-if (!GITHUB_TOKEN) {
-  console.error('Error: GITHUB_TOKEN is not set in the environment.');
-  process.exit(1);  // Exit if the token is not provided
-}
-
-// GitHub API base URL
-const GITHUB_API_BASE_URL = 'https://api.github.com';
-
-/**
- * Fetch contributors from a GitHub repository
- * @param owner Repository owner (username or organization)
- * @param repo Repository name
- */
-async function fetchContributors(owner: string, repo: string) {
-  try {
-    const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contributors`, {
-      headers: {
-        Authorization: `token ${GITHUB_TOKEN}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching contributors: ${error}`);
-    throw error;
-  }
+if (!Util.Constants.GITHUB_TOKEN) {
+  Util.Logger.logErrorAndExit('Error: GITHUB_TOKEN is not set in the environment.');
 }
 
 /**
@@ -70,7 +48,7 @@ function parseGithubUrl(url: string): { owner: string, repo: string } | null {
  * Calculate the Bus Factor for a given GitHub URL and return the result as a formatted string
  * @param githubUrl The GitHub URL of the repository
  */
-async function calculateBusFactorForRepo(githubUrl: string): Promise<string> {
+async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
   // Parse the owner and repo from the URL
   const repoInfo = parseGithubUrl(githubUrl);
 
@@ -82,11 +60,12 @@ async function calculateBusFactorForRepo(githubUrl: string): Promise<string> {
 
   try {
     // Fetch contributors
-    const contributors = await fetchContributors(owner, repo);
+    const contributors = await API.fetchContributors(owner, repo);
 
     // Calculate Bus Factor
     const busFactor = calculateBusFactor(contributors, 50);
-    return `The Bus Factor for ${owner}/${repo} is: ${busFactor}`;
+    const correctnessScore = await calculateCorrectness(owner,repo)
+    return `The Bus Factor for ${owner}/${repo} is: ${busFactor}.+\nThe Correctness Score is: ${correctnessScore}.`;
   } catch (error) {
     return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
   }
@@ -96,11 +75,9 @@ async function calculateBusFactorForRepo(githubUrl: string): Promise<string> {
  * Main function to execute the process, calling the Bus Factor calculation for a specific GitHub URL.
  */
 async function main() {
-  // Hardcoded GitHub repository URL
-  const githubUrl = 'https://github.com/axios/axios';
 
   // Call the function to calculate the Bus Factor and get the result string
-  const result = await calculateBusFactorForRepo(githubUrl);
+  const result = await calculateMetricsForRepo(Util.Constants.githubUrl);
 
   // Print the result
   console.log(result);
