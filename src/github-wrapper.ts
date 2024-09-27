@@ -147,12 +147,34 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
     // Calculate Ramp-Up score
     const rampUpScore = await calculateRampUp(owner, repo);
 
-    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor}\n - Ramp-Up Score: ${rampUpScore}/10`;
+    // Fetch license information
+    const retrievedLicense = await fetchRepoLicense(owner, repo);
+
+    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor}\n - Ramp-Up Score: ${rampUpScore}/10\n - License: ${retrievedLicense.name}`;
   
   } catch (error) {
     return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
   }
 }
+/**
+ * Fetch the license information from a GitHub repository.
+ * @param owner Repository owner (username or organization)
+ * @param repo Repository name
+ */
+async function fetchRepoLicense(owner: string, repo: string) {
+  try {
+      const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/license`, {
+          headers: {
+              Authorization: `token ${GITHUB_TOKEN}`,
+          },
+      });
+      return response.data.license;
+  } catch (error) {
+      console.error(`ERROR! Failed to retrieve license information for ${owner}/${repo}: ${error}`);
+      throw error;
+  }
+}
+
 
 /**
  * Main function to read a list of GitHub URLs from a text file and calculate metrics for each.
