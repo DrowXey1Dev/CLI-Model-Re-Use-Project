@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as Util from './Util';
 import * as API from './api-calls/github-adapter';
 import { calculateCorrectness } from './find-correctness';
+import { calculateResponsiveMaintener } from './find-responsive-maintainer';
 
 
 if (!Util.Constants.GITHUB_TOKEN) {
@@ -64,8 +65,14 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
 
     // Calculate Bus Factor
     const busFactor = calculateBusFactor(contributors, 50);
-    const correctnessScore = await calculateCorrectness(owner,repo)
-    return `The Bus Factor for ${owner}/${repo} is: ${busFactor}.+\nThe Correctness Score is: ${correctnessScore}.`;
+    const correctnessScore = await calculateCorrectness(owner,repo);
+    const maintainedWell = await calculateResponsiveMaintener(owner, repo);
+    const result = `
+      The Bus Factor for ${owner}/${repo} is: ${busFactor}.
+      The Correctness Score is: ${correctnessScore}.
+      The maintenance of the repo Score is: ${maintainedWell}.`;
+    return result;
+    
   } catch (error) {
     return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
   }
