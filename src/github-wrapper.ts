@@ -1,6 +1,9 @@
 import { functionTimer } from './function-timer';
 import { calculateCorrectness } from './find-correctness';
 import { calculateResponsiveMaintener } from './find-responsive-maintainer';
+import { calculateBusFactor } from './bus-factor';
+import { calculateRampUp } from './ramp-up';
+import { calculateNetScore } from './netscore';
 import { getGithubLink } from './Util/npmUtil';
 
 import * as Util from './Util';
