@@ -1,35 +1,16 @@
+import { functionTimer } from './function-timer';
+
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
+import * as Util from './Util';
+import * as API from './api-calls/github-adapter';
+import { calculateCorrectness } from './find-correctness';
+import { calculateResponsiveMaintener } from './find-responsive-maintainer';
 
-// GitHub API token from environment variable
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
-if (!GITHUB_TOKEN) {
-  console.error('Error: GITHUB_TOKEN is not set in the environment.');
-  process.exit(1);  // Exit if the token is not provided
-}
-
-// GitHub API base URL
-const GITHUB_API_BASE_URL = 'https://api.github.com';
-
-/**
- * Fetch contributors from a GitHub repository
- * @param owner Repository owner (username or organization)
- * @param repo Repository name
- */
-async function fetchContributors(owner: string, repo: string) {
-  try {
-    const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contributors`, {
-      headers: {
-        Authorization: `token ${GITHUB_TOKEN}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching contributors: ${error}`);
-    throw error;
-  }
+if (!Util.Constants.GITHUB_TOKEN) {
+  Util.Logger.logErrorAndExit('Error: GITHUB_TOKEN is not set in the environment.');
 }
 
 /**
@@ -39,9 +20,9 @@ async function fetchContributors(owner: string, repo: string) {
  */
 async function fetchRepoDetails(owner: string, repo: string) {
   try {
-    const response = await axios.get(`${GITHUB_API_BASE_URL}/repos/${owner}/${repo}`, {
+    const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}`, {
       headers: {
-        Authorization: `token ${GITHUB_TOKEN}`,
+        Authorization: `token ${Util.Constants.GITHUB_TOKEN}`,
       },
     });
     return response.data;
@@ -139,20 +120,61 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
 
   try {
     // Fetch contributors for Bus Factor calculation
-    const contributors = await fetchContributors(owner, repo);
-
+    const contributors = await API.fetchContributors(owner, repo);
     // Calculate Bus Factor
-    const busFactor = calculateBusFactor(contributors, 50);
-
+    const busFactor = await functionTimer(() => calculateBusFactor(contributors, 50));
+    
     // Calculate Ramp-Up score
-    const rampUpScore = await calculateRampUp(owner, repo);
+    const rampUpScore = await functionTimer(() => calculateRampUp(owner, repo));
 
-    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor}\n - Ramp-Up Score: ${rampUpScore}/10`;
+    // Fetch license information
+    const retrievedLicense = await functionTimer(() => fetchRepoLicense(owner, repo));
+
+    const correctness = await calculateCorrectness(owner, repo);
+
+    const maintainResponsiveness = await calculateResponsiveMaintener(owner, repo);
+
+    //var ndjsonOutputString = busFactor.output;
+
+    const result = `
+          For ${owner}/${repo}:
+          - Bus Factor ${busFactor.output}.
+          - Bus Factor Latency ${busFactor.time}
+          - Ramp-Up Score: ${rampUpScore.output}/10
+          - Ramp-Up Score Latency ${rampUpScore.time}
+          - License: ${retrievedLicense.output.name}
+          - License Latency ${retrievedLicense.time}
+          - Correctness:  ${correctness}
+          - Maintenance: ${maintainResponsiveness}`;
+    return result;
+
+    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor.output}\n - Bus Factor Latency ${busFactor.time}\n - Ramp-Up Score: ${rampUpScore.output}/10\n - Ramp-Up Score Latency ${rampUpScore.time}\n - License: ${retrievedLicense.output.name}\n - License Latency ${retrievedLicense.time}\n`;
+
+    
   
   } catch (error) {
     return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
   }
 }
+/**
+ * Fetch the license information from a GitHub repository.
+ * @param owner Repository owner (username or organization)
+ * @param repo Repository name
+ */
+async function fetchRepoLicense(owner: string, repo: string) {
+  try {
+      const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/license`, {
+          headers: {
+              Authorization: `token ${Util.Constants.GITHUB_TOKEN}`,
+          },
+      });
+      return response.data.license;
+  } catch (error) {
+      console.error(`ERROR! Failed to retrieve license information for ${owner}/${repo}: ${error}`);
+      throw error;
+  }
+}
+
 
 /**
  * Main function to read a list of GitHub URLs from a text file and calculate metrics for each.
