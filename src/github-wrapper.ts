@@ -7,6 +7,7 @@ import * as Util from './Util';
 import * as API from './api-calls/github-adapter';
 import { calculateCorrectness } from './find-correctness';
 import { calculateResponsiveMaintener } from './find-responsive-maintainer';
+import { calculateNetScore } from './netscore';
 
 
 if (!Util.Constants.GITHUB_TOKEN) {
@@ -132,7 +133,15 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
 
     const correctness = await calculateCorrectness(owner, repo);
 
-    const maintainResponsiveness = await calculateResponsiveMaintener(owner, repo);
+      const maintainResponsiveness = await calculateResponsiveMaintener(owner, repo);
+
+      // Calculate NetScore
+      const netScore = calculateNetScore(
+          busFactor.output,
+          rampUpScore.output,
+          correctness,
+          maintainResponsiveness
+      );
 
     //var ndjsonOutputString = busFactor.output;
 
@@ -145,15 +154,13 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
           - License: ${retrievedLicense.output.name}
           - License Latency ${retrievedLicense.time}
           - Correctness:  ${correctness}
-          - Maintenance: ${maintainResponsiveness}`;
+          - Maintenance: ${maintainResponsiveness}
+          - NetScore: ${netScore.toFixed(2)}`;
     return result;
-
-    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor.output}\n - Bus Factor Latency ${busFactor.time}\n - Ramp-Up Score: ${rampUpScore.output}/10\n - Ramp-Up Score Latency ${rampUpScore.time}\n - License: ${retrievedLicense.output.name}\n - License Latency ${retrievedLicense.time}\n`;
-
     
   
   } catch (error) {
-    return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
+    return `Error calculating Metrics for ${owner}/${repo}: ${error}`;
   }
 }
 /**
