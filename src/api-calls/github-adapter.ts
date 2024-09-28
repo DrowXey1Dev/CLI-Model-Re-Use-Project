@@ -57,6 +57,25 @@ export async function fetchContributors(owner: string, repo: string) {
     }
   }
 
+/**
+* Fetch repository details from GitHub to calculate the Ramp-Up score.
+* @param owner Repository owner (username or organization)
+* @param repo Repository name
+*/
+export async function fetchRepoDetails(owner: string, repo: string) {
+    try {
+        const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}`, {
+            headers: {
+                Authorization: `token ${Util.Constants.GITHUB_TOKEN}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching repository details: ${error}`);
+        throw error;
+    }
+}
+
   // export async function repoDependenciesCheck(owner: string, repo: string) {
   //   try {
   //     const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/dependency-graph/snapshots`, {
