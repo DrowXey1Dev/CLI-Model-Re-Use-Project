@@ -9,8 +9,6 @@ import { Command } from "commander";
 
 const program = new Command();
 
-const content = ''
-
 program
   .version("0.0.1")
   .parse(process.argv);
@@ -27,15 +25,7 @@ else {
     if(process.env.LOG_FILE == "" || process.env.GITHUB_TOKEN == "") {
         process.exit(1);
     }
-    //fs.openSync("./" + process.argv[2] + ".JSON", "w");
+
     const urlFilePath = path.join(__dirname, String(process.argv[2]));
     parseUrlFile(urlFilePath);
-
-    fs.writeFile("./" + process.argv[2] + ".NDJSON", content, err => {
-        if (err) {
-          console.error(err);
-        } else {
-          // file written successfully
-        }
-      });
 }

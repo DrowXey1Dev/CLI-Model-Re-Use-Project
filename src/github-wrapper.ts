@@ -101,9 +101,19 @@ export async function parseUrlFile(filepath: string) {
   // Read the file and split the content into an array of URLs
   const urls = fs.readFileSync(filepath, 'utf-8').split('\n').filter(Boolean);  // Removes empty lines
 
+  //create NDJSON file
+  fs.writeFile(`${filepath}.NDJSON`, '', err => {
+    if (err) {
+      console.error(err);
+    } else {
+      // file written successfully
+    }
+  });
+
   // Loop through each URL and calculate the metrics
   for (const githubUrl of urls) {
     const result = await calculateMetricsForRepo(githubUrl);
     console.log(result);
+    fs.appendFileSync(`${filepath}.NDJSON`, `${result}\n`);
   }
 }
