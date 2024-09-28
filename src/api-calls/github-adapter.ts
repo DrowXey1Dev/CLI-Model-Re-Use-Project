@@ -1,11 +1,6 @@
 import axios from "axios";
 import * as Util from '../Util';
 
-/**
- * Fetch contributors from a GitHub repository
- * @param owner Repository owner (username or organization)
- * @param repo Repository name
- */
 export async function fetchContributors(owner: string, repo: string) {
     try {
       const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contributors`, {
