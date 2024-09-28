@@ -1,3 +1,5 @@
+import { functionTimer } from './function-timer';
+
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
@@ -140,17 +142,20 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
   try {
     // Fetch contributors for Bus Factor calculation
     const contributors = await fetchContributors(owner, repo);
-
     // Calculate Bus Factor
-    const busFactor = calculateBusFactor(contributors, 50);
-
+    const busFactor = await functionTimer(() => calculateBusFactor(contributors, 50));
+    
     // Calculate Ramp-Up score
-    const rampUpScore = await calculateRampUp(owner, repo);
+    const rampUpScore = await functionTimer(() => calculateRampUp(owner, repo));
 
     // Fetch license information
-    const retrievedLicense = await fetchRepoLicense(owner, repo);
+    const retrievedLicense = await functionTimer(() => fetchRepoLicense(owner, repo));
 
-    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor}\n - Ramp-Up Score: ${rampUpScore}/10\n - License: ${retrievedLicense.name}`;
+    //var ndjsonOutputString = busFactor.output;
+
+    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor.output}\n - Bus Factor Latency ${busFactor.time}\n - Ramp-Up Score: ${rampUpScore.output}/10\n - Ramp-Up Score Latency ${rampUpScore.time}\n - License: ${retrievedLicense.output.name}\n - License Latency ${retrievedLicense.time}\n`;
+
+    
   
   } catch (error) {
     return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
