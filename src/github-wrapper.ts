@@ -1,12 +1,14 @@
 import { functionTimer } from './function-timer';
+import { calculateCorrectness } from './find-correctness';
+import { calculateResponsiveMaintener } from './find-responsive-maintainer';
+import { getGithubLink } from './Util/npmUtil';
+
+import * as Util from './Util';
+import * as API from './api-calls/github-adapter';
 
 import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
-import * as Util from './Util';
-import * as API from './api-calls/github-adapter';
-import { calculateCorrectness } from './find-correctness';
-import { calculateResponsiveMaintener } from './find-responsive-maintainer';
 
 
 if (!Util.Constants.GITHUB_TOKEN) {
@@ -108,12 +110,13 @@ function parseGithubUrl(url: string): { owner: string, repo: string } | null {
  * Calculate the metrics for a given GitHub URL and return the result as a formatted string
  * @param githubUrl The GitHub URL of the repository
  */
-async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
+export async function calculateMetricsForRepo(url: string): Promise<string> {
   // Parse the owner and repo from the URL
+  const githubUrl = getGithubLink(url);
   const repoInfo = parseGithubUrl(githubUrl);
 
   if (!repoInfo) {
-    return `Invalid GitHub URL: ${githubUrl}`;
+    return `Invalid URL: ${githubUrl}`;
   }
 
   const { owner, repo } = repoInfo;
