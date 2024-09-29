@@ -12,23 +12,32 @@ export async function calculateRampUp(owner: string, repo: string): Promise<numb
 
         let rampUpScore = 0;
 
-        // Check if README.md exists (5 points if present)
+        // Check if README.md exists and has content (base score)
         const hasReadme = repoDetails.has_wiki || repoDetails.description;
         if (hasReadme) {
-            rampUpScore += 5;  // README is present
+            rampUpScore += 3;  // README exists and has content
+        }
+
+        // Check for a docs folder (additional points for documentation)
+        const hasDocsFolder = repoDetails.has_docs; // Assuming has_docs is provided by fetchRepoDetails
+        if (hasDocsFolder) {
+            rampUpScore += 2;  // Additional documentation present
         }
 
         // Consider the number of open issues (fewer issues = better ramp-up score)
         const openIssues = repoDetails.open_issues_count;
         if (openIssues < 10) {
-            rampUpScore += 5;  // Very few open issues
+            rampUpScore += 3;  // Very few open issues
         } else if (openIssues < 50) {
-            rampUpScore += 3;  // Moderate number of open issues
+            rampUpScore += 2;  // Moderate number of open issues
         } else {
             rampUpScore += 1;  // High number of open issues
         }
 
-        return rampUpScore;
+        // Normalize the score to a range of 0-1 (max possible score = 8)
+        const normalizedScore = Math.min(rampUpScore / 8, 1);
+
+        return normalizedScore;
 
     } catch (error) {
         console.error(`Error calculating Ramp-Up score for ${owner}/${repo}: ${error}`);
