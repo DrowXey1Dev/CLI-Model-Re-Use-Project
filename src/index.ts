@@ -6,6 +6,7 @@ import fs from "fs";
 import path from 'path';
 
 import { Command } from "commander";
+import { exec } from 'child_process';
 
 const program = new Command();
 
@@ -15,8 +16,18 @@ program
 
   const options = program.opts();
 
-if(process.argv[2] == "install") {
-    console.log("All dependencies were installed");
+// Handle the "install" command
+if (process.argv[2] === 'install') {
+    // Run npm install
+    exec('npm install', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error: ${error.message}`);
+            process.exit(1); // Exit with error code 1
+        } else {
+            console.log('All dependencies were installed successfully.');
+            process.exit(0); // Exit with success code 0
+        }
+    });
 }
 else if(process.argv[2] == "test") {
     console.log("Total: 10\nPassed: 9\nCoverage: 90%\n9/10 test cases passed. 90% line coverage achieved.");
