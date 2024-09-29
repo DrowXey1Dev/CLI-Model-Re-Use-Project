@@ -19,11 +19,8 @@
     "@types/node": "^22.5.5",
     "jest": "^29.7.0",
     "pkg": "^5.8.1",
-<<<<<<< HEAD
     "ts-jest": "^29.2.5",
-=======
     "sync-request": "^6.1.0",
->>>>>>> c58053a48def71dbf3e6a7591126b042552c1189
     "typescript": "^5.6.2"
   },
   "dependencies": {
