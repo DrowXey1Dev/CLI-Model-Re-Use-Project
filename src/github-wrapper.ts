@@ -69,7 +69,22 @@ export async function calculateMetricsForRepo(url: string): Promise<string> {
           maintainResponsiveness.output
      ));
 
-    const result =`{"URL":${url}, "NetScore":${netScore.output.toFixed(2)}, "NetScore_Latency":${netScore.time}, "RampUp":${rampUpScore.output}, "RampUp_Latency":${rampUpScore.time}, "Correctness":${correctness.output}, "Correctness_Latency":${correctness.time}, "BusFactor":${busFactor.output}, "BusFactor_Latency":${busFactor.time}, "ResponsiveMaintainer":${maintainResponsiveness.output}, "ResponsiveMaintainer_Latency":${maintainResponsiveness.time}, "License":${retrievedLicense.output}, "License_Latency":${retrievedLicense.time}}`;
+      const result = `{
+    "URL": "${url}", 
+    "NetScore": "${Number(netScore.output.toPrecision(5))}", 
+    "NetScore_Latency": ${Number(netScore.time.toPrecision(5))}, 
+    "RampUp": ${Number(rampUpScore.output.toPrecision(5))}, 
+    "RampUp_Latency": ${Number(rampUpScore.time.toPrecision(5))}, 
+    "Correctness": ${Number(correctness.output.toPrecision(5))}, 
+    "Correctness_Latency": ${Number(correctness.time.toPrecision(5))}, 
+    "BusFactor": ${Number(busFactor.output.toPrecision(5))}, 
+    "BusFactor_Latency": ${Number(busFactor.time.toPrecision(5))}, 
+    "ResponsiveMaintainer": ${Number(maintainResponsiveness.output.toPrecision(5))}, 
+    "ResponsiveMaintainer_Latency": ${Number(maintainResponsiveness.time.toPrecision(5))}, 
+    "License": "${retrievedLicense.output}", 
+    "License_Latency": ${Number(retrievedLicense.time.toPrecision(5))}
+}`;
+
     return result;
   } catch (error) {
     return `Error calculating Metrics for ${owner}/${repo}: ${error}`;
@@ -94,9 +109,6 @@ async function fetchRepoLicense(owner: string, repo: string) {
   }
 }
 
-/**
- * Main function to read a list of GitHub URLs from a text file and calculate metrics for each.
- */
 export async function parseUrlFile(filepath: string) {
   // Read the file and split the content into an array of URLs
   const urls = fs.readFileSync(filepath, 'utf-8').split('\n').filter(Boolean);  // Removes empty lines

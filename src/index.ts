@@ -37,6 +37,8 @@ else {
         process.exit(1);
     }
 
-    const urlFilePath = path.join(__dirname, String(process.argv[2]));
+    //const urlFilePath = path.join(__dirname, String(process.argv[2]));
+    // Path to URL file provided as an argument
+    const urlFilePath = path.join(process.cwd(), String(process.argv[2])); // Updated to use `process.cwd()`
     parseUrlFile(urlFilePath);
 }
