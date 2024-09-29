@@ -14,7 +14,7 @@ This analyzer is a CLI tool designed to analyze GitHub and NPM repositories and 
 
 ### **1. Install Dependencies**
 To set up the project, all necessary dependencies can be installed using the following command:
-```bash
+
 **run install**
 
 ### **2. GitHub Token Configuration**
