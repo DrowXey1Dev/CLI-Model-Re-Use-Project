@@ -147,11 +147,7 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
           - Correctness:  ${correctness}
           - Maintenance: ${maintainResponsiveness}`;
     return result;
-
-    return `For ${owner}/${repo}:\n - Bus Factor ${busFactor.output}\n - Bus Factor Latency ${busFactor.time}\n - Ramp-Up Score: ${rampUpScore.output}/10\n - Ramp-Up Score Latency ${rampUpScore.time}\n - License: ${retrievedLicense.output.name}\n - License Latency ${retrievedLicense.time}\n`;
-
     
-  
   } catch (error) {
     return `Error calculating Bus Factor for ${owner}/${repo}: ${error}`;
   }

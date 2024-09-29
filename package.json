@@ -9,13 +9,17 @@
   "scripts": {
     "build": "tsc -p .",
     "start": "npm run build -- -w",
-    "executable": "pkg -o run ./dist/index.js"
+    "executable": "pkg -o run ./dist/index.js",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^29.5.13",
     "@types/node": "^22.5.5",
+    "jest": "^29.7.0",
     "pkg": "^5.8.1",
+    "ts-jest": "^29.2.5",
     "typescript": "^5.6.2"
   },
   "dependencies": {

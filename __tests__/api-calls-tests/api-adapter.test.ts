@@ -36,7 +36,7 @@ describe('GitHub API Calls', () => {
    });
 
 
-//  //testing the api call repoIssues to check if it works as intended
+  //testing the api call repoIssues to check if it works as intended
 
   it('should fetch issues for a repository', async () => {
     const mockIssues = [
@@ -58,7 +58,7 @@ describe('GitHub API Calls', () => {
     );
   });
 
-//   //testing the api call repoPullRequests to check if it works as intended
+   //testing the api call repoPullRequests to check if it works as intended
 
   it('should fetch pull requests for a repository', async () => {
     const mockPullRequests = [
