@@ -1,16 +1,16 @@
 import { functionTimer } from './function-timer';
+import { calculateCorrectness } from './find-correctness';
+import { calculateResponsiveMaintener } from './find-responsive-maintainer';
+import { calculateBusFactor } from './bus-factor';
+import { calculateRampUp } from './ramp-up';
+import { calculateNetScore } from './netscore';
+import { getGithubLink } from './Util/npmUtil';
+
+import * as Util from './Util';
+import * as API from './api-calls/github-adapter';
 
 import axios from 'axios';
 import fs from 'fs';
-import path from 'path';
-import * as Util from './Util';
-import * as API from './api-calls/github-adapter';
-import { calculateCorrectness } from './find-correctness';
-import { calculateResponsiveMaintener } from './find-responsive-maintainer';
-import { calculateNetScore } from './netscore';
-import { calculateBusFactor } from './bus-factor';
-import { calculateRampUp } from './ramp-up'
-
 
 if (!Util.Constants.GITHUB_TOKEN) {
   Util.Logger.logErrorAndExit('Error: GITHUB_TOKEN is not set in the environment.');
@@ -32,12 +32,13 @@ function parseGithubUrl(url: string): { owner: string, repo: string } | null {
  * Calculate the metrics for a given GitHub URL and return the result as a formatted string
  * @param githubUrl The GitHub URL of the repository
  */
-async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
+export async function calculateMetricsForRepo(url: string): Promise<string> {
   // Parse the owner and repo from the URL
+  const githubUrl = getGithubLink(url);
   const repoInfo = parseGithubUrl(githubUrl);
 
   if (!repoInfo) {
-    return `Invalid GitHub URL: ${githubUrl}`;
+    return `Invalid URL: ${githubUrl}`;
   }
 
   const { owner, repo } = repoInfo;
@@ -54,34 +55,22 @@ async function calculateMetricsForRepo(githubUrl: string): Promise<string> {
     // Fetch license information
     const retrievedLicense = await functionTimer(() => fetchRepoLicense(owner, repo));
 
-    const correctness = await calculateCorrectness(owner, repo);
+    // Calculate correctness
+    const correctness = await functionTimer(() =>calculateCorrectness(owner, repo));
 
-    const maintainResponsiveness = await calculateResponsiveMaintener(owner, repo);
+    // Calculate Responsiveness
+    const maintainResponsiveness = await functionTimer(() =>calculateResponsiveMaintener(owner, repo));
 
     // Calculate NetScore
-    const netScore = calculateNetScore(
+    const netScore = await functionTimer(() =>calculateNetScore(
           busFactor.output,
           rampUpScore.output,
-          correctness,
-          maintainResponsiveness
-     );
+          correctness.output,
+          maintainResponsiveness.output
+     ));
 
-    //var ndjsonOutputString = busFactor.output;
-
-    const result = `
-          For ${owner}/${repo}:
-          - Bus Factor ${busFactor.output}.
-          - Bus Factor Latency ${busFactor.time}
-          - Ramp-Up Score: ${rampUpScore.output}/10
-          - Ramp-Up Score Latency ${rampUpScore.time}
-          - License: ${retrievedLicense.output.name}
-          - License Latency ${retrievedLicense.time}
-          - Correctness:  ${correctness}
-          - Maintenance: ${maintainResponsiveness}
-          - NetScore: ${netScore.toFixed(2)}`;
+    const result =`{"URL":${url}, "NetScore":${netScore.output.toFixed(2)}, "NetScore_Latency":${netScore.time}, "RampUp":${rampUpScore.output}, "RampUp_Latency":${rampUpScore.time}, "Correctness":${correctness.output}, "Correctness_Latency":${correctness.time}, "BusFactor":${busFactor.output}, "BusFactor_Latency":${busFactor.time}, "ResponsiveMaintainer":${maintainResponsiveness.output}, "ResponsiveMaintainer_Latency":${maintainResponsiveness.time}, "License":${retrievedLicense.output}, "License_Latency":${retrievedLicense.time}}`;
     return result;
-    
-  
   } catch (error) {
     return `Error calculating Metrics for ${owner}/${repo}: ${error}`;
   }
@@ -105,24 +94,26 @@ async function fetchRepoLicense(owner: string, repo: string) {
   }
 }
 
-
 /**
  * Main function to read a list of GitHub URLs from a text file and calculate metrics for each.
  */
-async function main() {
-  // Path to the file containing GitHub URLs
-  const urlFilePath = path.join(__dirname, 'url_file.txt');
-
+export async function parseUrlFile(filepath: string) {
   // Read the file and split the content into an array of URLs
-  const urls = fs.readFileSync(urlFilePath, 'utf-8').split('\n').filter(Boolean);  // Removes empty lines
+  const urls = fs.readFileSync(filepath, 'utf-8').split('\n').filter(Boolean);  // Removes empty lines
+
+  //create NDJSON file
+  fs.writeFile(`${filepath}.NDJSON`, '', err => {
+    if (err) {
+      console.error(err);
+    } else {
+      // file written successfully
+    }
+  });
 
   // Loop through each URL and calculate the metrics
   for (const githubUrl of urls) {
     const result = await calculateMetricsForRepo(githubUrl);
     console.log(result);
+    fs.appendFileSync(`${filepath}.NDJSON`, `${result}\n`);
   }
 }
-
-// Run the main function
-main();
-
