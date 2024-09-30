@@ -58,7 +58,7 @@ export async function calculateMetricsForRepo(url: string): Promise<string> {
 
     // Fetch license information
     const retrievedLicense = await functionTimer(() => fetchRepoLicense(owner, repo));
-
+    
     // Calculate correctness
     const correctness = await functionTimer(() => calculateCorrectness(owner, repo));
 
@@ -85,7 +85,7 @@ export async function calculateMetricsForRepo(url: string): Promise<string> {
       "BusFactor_Latency": ${Number(busFactor.time.toPrecision(5))}, 
       "ResponsiveMaintainer": ${Number(maintainResponsiveness.output.toPrecision(5))}, 
       "ResponsiveMaintainer_Latency": ${Number(maintainResponsiveness.time.toPrecision(5))}, 
-      "License": "${retrievedLicense.output.name}", 
+      "License": "${Number(retrievedLicense.output)}", 
       "License_Latency": ${Number(retrievedLicense.time.toPrecision(5))}
     }`;
 
@@ -110,7 +110,15 @@ async function fetchRepoLicense(owner: string, repo: string) {
               Authorization: `token ${Util.Constants.GITHUB_TOKEN}`,
           },
       });
-      return response.data.license;
+      //check to see if the license is compatible or not
+      if(String(response.data.license.name) != 'Other'){
+        //if the license is NOT equal to "other" then it is compatible and so return a 1
+        return 1;
+      }else{
+        //if the license is equal to "other" then return 0, since the license is not compatible
+        return 0;
+      }
+      //return response.data.license;
   } catch (error) {
       console.error(`ERROR! Failed to retrieve license information for ${owner}/${repo}: ${error}`);
       throw error;
