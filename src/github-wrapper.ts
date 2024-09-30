@@ -85,7 +85,7 @@ export async function calculateMetricsForRepo(url: string): Promise<string> {
       "BusFactor_Latency": ${Number(busFactor.time.toPrecision(5))}, 
       "ResponsiveMaintainer": ${Number(maintainResponsiveness.output.toPrecision(5))}, 
       "ResponsiveMaintainer_Latency": ${Number(maintainResponsiveness.time.toPrecision(5))}, 
-      "License": "${retrievedLicense.output}", 
+      "License": "${retrievedLicense.output.name}", 
       "License_Latency": ${Number(retrievedLicense.time.toPrecision(5))}
     }`;
 
