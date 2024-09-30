@@ -1,11 +1,24 @@
 import request from 'sync-request';
 
+/**
+ * Checks whether the provided URL is a valid npm package link.
+ *
+ * @param url - The URL to check.
+ * @returns `true` if the URL is an npm package URL, otherwise `false`.
+ */
 function isNpmLink(url: string): boolean {
     // Regex to check if the input is an npmjs URL
     const npmRegex = /^(https?:\/\/)?(www\.)?npmjs\.com\/package\/(.+)$/;
     return npmRegex.test(url);
 }
 
+/**
+ * Extracts and returns the GitHub repository URL from an npm package URL.
+ * If the provided URL is a GitHub repository URL, it returns the cleaned version of it.
+ *
+ * @param url - The npm or GitHub URL to process.
+ * @returns The GitHub repository URL if found, or the original URL if it is not an npm link or no repository is found.
+ */
 export function getGithubLink(url: string): string {
     if (isNpmLink(url)) {
         const packageName = url.split('/').pop(); // Extract package name from the URL

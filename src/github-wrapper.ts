@@ -17,8 +17,10 @@ if (!Util.Constants.GITHUB_TOKEN) {
 }
 
 /**
- * Parse a GitHub repository URL to extract the owner and repo name
- * @param url GitHub repository URL
+ * Parse a GitHub repository URL to extract the owner and repository name.
+ * 
+ * @param url - GitHub repository URL.
+ * @returns An object containing the owner and repository name, or null if the URL is invalid.
  */
 function parseGithubUrl(url: string): { owner: string, repo: string } | null {
   const match = url.match(/https:\/\/github\.com\/([^/]+)\/([^/]+)/);
@@ -29,8 +31,10 @@ function parseGithubUrl(url: string): { owner: string, repo: string } | null {
 }
 
 /**
- * Calculate the metrics for a given GitHub URL and return the result as a formatted string
- * @param githubUrl The GitHub URL of the repository
+ * Calculate metrics for a given GitHub or npm package URL and return the result as a formatted string.
+ * 
+ * @param url - The URL of the GitHub repository or npm package.
+ * @returns A formatted string containing the calculated metrics or an error message.
  */
 export async function calculateMetricsForRepo(url: string): Promise<string> {
   // Parse the owner and repo from the URL
@@ -56,44 +60,48 @@ export async function calculateMetricsForRepo(url: string): Promise<string> {
     const retrievedLicense = await functionTimer(() => fetchRepoLicense(owner, repo));
 
     // Calculate correctness
-    const correctness = await functionTimer(() =>calculateCorrectness(owner, repo));
+    const correctness = await functionTimer(() => calculateCorrectness(owner, repo));
 
     // Calculate Responsiveness
-    const maintainResponsiveness = await functionTimer(() =>calculateResponsiveMaintener(owner, repo));
+    const maintainResponsiveness = await functionTimer(() => calculateResponsiveMaintener(owner, repo));
 
     // Calculate NetScore
-    const netScore = await functionTimer(() =>calculateNetScore(
+    const netScore = await functionTimer(() => calculateNetScore(
           busFactor.output,
           rampUpScore.output,
           correctness.output,
           maintainResponsiveness.output
      ));
 
-      const result = `{
-    "URL": "${url}", 
-    "NetScore": "${Number(netScore.output.toPrecision(5))}", 
-    "NetScore_Latency": ${Number(netScore.time.toPrecision(5))}, 
-    "RampUp": ${Number(rampUpScore.output.toPrecision(5))}, 
-    "RampUp_Latency": ${Number(rampUpScore.time.toPrecision(5))}, 
-    "Correctness": ${Number(correctness.output.toPrecision(5))}, 
-    "Correctness_Latency": ${Number(correctness.time.toPrecision(5))}, 
-    "BusFactor": ${Number(busFactor.output.toPrecision(5))}, 
-    "BusFactor_Latency": ${Number(busFactor.time.toPrecision(5))}, 
-    "ResponsiveMaintainer": ${Number(maintainResponsiveness.output.toPrecision(5))}, 
-    "ResponsiveMaintainer_Latency": ${Number(maintainResponsiveness.time.toPrecision(5))}, 
-    "License": "${retrievedLicense.output}", 
-    "License_Latency": ${Number(retrievedLicense.time.toPrecision(5))}
-}`;
+    const result = `{
+      "URL": "${url}", 
+      "NetScore": "${Number(netScore.output.toPrecision(5))}", 
+      "NetScore_Latency": ${Number(netScore.time.toPrecision(5))}, 
+      "RampUp": ${Number(rampUpScore.output.toPrecision(5))}, 
+      "RampUp_Latency": ${Number(rampUpScore.time.toPrecision(5))}, 
+      "Correctness": ${Number(correctness.output.toPrecision(5))}, 
+      "Correctness_Latency": ${Number(correctness.time.toPrecision(5))}, 
+      "BusFactor": ${Number(busFactor.output.toPrecision(5))}, 
+      "BusFactor_Latency": ${Number(busFactor.time.toPrecision(5))}, 
+      "ResponsiveMaintainer": ${Number(maintainResponsiveness.output.toPrecision(5))}, 
+      "ResponsiveMaintainer_Latency": ${Number(maintainResponsiveness.time.toPrecision(5))}, 
+      "License": "${retrievedLicense.output}", 
+      "License_Latency": ${Number(retrievedLicense.time.toPrecision(5))}
+    }`;
 
     return result;
   } catch (error) {
     return `Error calculating Metrics for ${owner}/${repo}: ${error}`;
   }
 }
+
 /**
  * Fetch the license information from a GitHub repository.
- * @param owner Repository owner (username or organization)
- * @param repo Repository name
+ * 
+ * @param owner - The repository owner (either username or organization).
+ * @param repo - The name of the repository.
+ * @returns The license information as a string.
+ * @throws Will throw an error if the license cannot be retrieved.
  */
 async function fetchRepoLicense(owner: string, repo: string) {
   try {
@@ -109,16 +117,21 @@ async function fetchRepoLicense(owner: string, repo: string) {
   }
 }
 
+/**
+ * Parse a file containing URLs and calculate metrics for each repository.
+ * 
+ * @param filepath - The file path to the file containing GitHub or npm package URLs (one per line).
+ */
 export async function parseUrlFile(filepath: string) {
   // Read the file and split the content into an array of URLs
   const urls = fs.readFileSync(filepath, 'utf-8').split('\n').filter(Boolean);  // Removes empty lines
 
-  //create NDJSON file
+  // Create NDJSON file
   fs.writeFile(`${filepath}.NDJSON`, '', err => {
     if (err) {
       console.error(err);
     } else {
-      // file written successfully
+      // File written successfully
     }
   });
 
