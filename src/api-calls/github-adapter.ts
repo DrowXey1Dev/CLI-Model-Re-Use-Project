@@ -1,6 +1,13 @@
 import axios from "axios";
 import * as Util from '../Util';
 
+/**
+ * Fetches a list of contributors for a GitHub repository.
+ * @param {string} owner - The username or organization of the repository owner.
+ * @param {string} repo - The name of the repository.
+ * @returns {Promise<Object[]>} A promise that resolves to an array of contributors.
+ * @throws Will throw an error if the request fails.
+ */
 export async function fetchContributors(owner: string, repo: string) {
     try {
       const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contributors`, {
@@ -15,6 +22,13 @@ export async function fetchContributors(owner: string, repo: string) {
     }
   }
 
+  /**
+ * Fetches all issues from a GitHub repository.
+ * @param {string} owner - The username or organization of the repository owner.
+ * @param {string} repo - The name of the repository.
+ * @returns {Promise<Object[]>} A promise that resolves to an array of issues.
+ * @throws Will throw an error if the request fails.
+ */
   export async function repoIssues(owner: string, repo: string) {
     try {
       const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/issues`, {
@@ -29,6 +43,13 @@ export async function fetchContributors(owner: string, repo: string) {
     }
   }
 
+/**
+ * Fetches all pull requests for a GitHub repository.
+ * @param {string} owner - The username or organization of the repository owner.
+ * @param {string} repo - The name of the repository.
+ * @returns {Promise<Object[]>} A promise that resolves to an array of pull requests.
+ * @throws Will throw an error if the request fails.
+ */
   export async function repoPullRequests(owner: string, repo: string) {
     try {
       const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/pulls`, {
@@ -43,6 +64,13 @@ export async function fetchContributors(owner: string, repo: string) {
     }
   }
 
+/**
+ * Fetches the commit history for a GitHub repository.
+ * @param {string} owner - The username or organization of the repository owner.
+ * @param {string} repo - The name of the repository.
+ * @returns {Promise<Object[]>} A promise that resolves to an array of commits.
+ * @throws Will throw an error if the request fails.
+ */
   export async function commitHistory(owner: string, repo: string) {
     try {
       const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/commits`, {
