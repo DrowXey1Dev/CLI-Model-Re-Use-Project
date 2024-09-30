@@ -52,7 +52,7 @@ describe('calculateCorrectness', () => {
     ]);
 
     const score = await calculateCorrectness('owner', 'repo');
-    expect(score).toBeLessThan(5);  
+    expect(score).toBeLessThan(0.5);  
   });
 
   //high correctness score for a repository with recent PRs and many commits
@@ -74,7 +74,7 @@ describe('calculateCorrectness', () => {
     ]);
 
     const score = await calculateCorrectness('owner', 'repo');
-    expect(score).toBeGreaterThan(7);  // Expecting a high score
+    expect(score).toBeGreaterThan(0.7);  // Expecting a high score
   });
 
 
@@ -98,8 +98,8 @@ describe('calculateCorrectness', () => {
     ]);
 
     const score = await calculateCorrectness('owner', 'repo');
-    expect(score).toBeGreaterThan(5);  // Expecting a moderate score
-    expect(score).toBeLessThan(8);  // But not too high due to old issues
+    expect(score).toBeGreaterThan(0.5);  // Expecting a moderate score
+    expect(score).toBeLessThan(0.8);  // But not too high due to old issues
   });
 
 

@@ -30,7 +30,7 @@ describe('calculateResponsiveMaintener', () => {
     ]);
 
     const score = await calculateResponsiveMaintener('owner', 'repo');
-    expect(score).toBeLessThan(5);  // Expecting a low responsiveness score
+    expect(score).toBeLessThan(0.5);  // Expecting a low responsiveness score
   });
 
   //high responsiveness score for a repository with recent PRs and frequent commits
@@ -66,7 +66,7 @@ describe('calculateResponsiveMaintener', () => {
     ]);
 
     const score = await calculateResponsiveMaintener('owner', 'repo');
-    expect(score).toBeGreaterThan(8);  // Expecting a high responsiveness score
+    expect(score).toBeGreaterThan(0.8);  // Expecting a high responsiveness score
   });
 
   //moderate responsiveness score for a repository with mixed activity
@@ -91,7 +91,7 @@ describe('calculateResponsiveMaintener', () => {
     ]);
 
     const score = await calculateResponsiveMaintener('owner', 'repo');
-    expect(score).toBeGreaterThan(4);  // Expecting a moderate score
-    expect(score).toBeLessThan(8);  
+    expect(score).toBeGreaterThan(0.4);  // Expecting a moderate score
+    expect(score).toBeLessThan(0.8);  
   });
 });
