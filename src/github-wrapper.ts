@@ -143,5 +143,4 @@ export async function parseUrlFile(filepath: string) {
     console.log(result);
     fs.appendFileSync(`${filepath}.NDJSON`, `${result}\n`);
   }
-  process.exit(0);
 }

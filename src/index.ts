@@ -94,5 +94,10 @@ else {
     }
 
     // Parse the file and calculate metrics
-    parseUrlFile(urlFilePath);
+    parseUrlFile(urlFilePath).then(() => {
+        process.exit(0);
+    }).catch(error => {
+        console.error('Error parsing URL file:', error);
+        process.exit(1); // Exit with a non-zero code on error
+    });
 }
