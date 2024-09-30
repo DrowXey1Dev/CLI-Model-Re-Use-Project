@@ -94,5 +94,6 @@ export async function calculateCorrectness(owner: string, repo: string): Promise
         checkForAmountIssues()
     ) / 5;
 
-    return finalScore;
+    const normalizedScore = Math.min(finalScore / 10, 1);
+    return normalizedScore;
 }

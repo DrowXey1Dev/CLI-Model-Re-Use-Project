@@ -82,5 +82,6 @@ export async function calculateResponsiveMaintener(owner: string,repo: string): 
         timeTakesIssueGetSolved()) / 3
     );
 
-    return finalScore;
+    const normalizedScore = Math.min(finalScore / 10, 1);
+    return normalizedScore;
 }

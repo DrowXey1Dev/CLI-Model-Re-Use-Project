@@ -1,0 +1,30 @@
+{
+    "URL": "https://github.com/nullivex/nodist", 
+    "NetScore": "1.5815", 
+    "NetScore_Latency": 0.050416, 
+    "RampUp": 0.625, 
+    "RampUp_Latency": 371.35, 
+    "Correctness": 5, 
+    "Correctness_Latency": 1478.8, 
+    "BusFactor": 0.034483, 
+    "BusFactor_Latency": 0.079709, 
+    "ResponsiveMaintainer": 0.66667, 
+    "ResponsiveMaintainer_Latency": 1543, 
+    "License": "[object Object]", 
+    "License_Latency": 305.67
+}
+{
+    "URL": "https://github.com/lodash/lodash", 
+    "NetScore": "1.8", 
+    "NetScore_Latency": 0.007167, 
+    "RampUp": 0.5, 
+    "RampUp_Latency": 190.84, 
+    "Correctness": 6, 
+    "Correctness_Latency": 1025.7, 
+    "BusFactor": 0.033333, 
+    "BusFactor_Latency": 0.0165, 
+    "ResponsiveMaintainer": 0.66667, 
+    "ResponsiveMaintainer_Latency": 983.78, 
+    "License": "[object Object]", 
+    "License_Latency": 202.94
+}
