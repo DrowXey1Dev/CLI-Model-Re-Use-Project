@@ -31,10 +31,44 @@ if (process.argv[2] === 'install') {
 }
 
 /**
- * Test command behaviour.
+ * Test command behaviour
+ * This run npx jest and parsed it's results to get total tests and passed tests
  */
 else if (process.argv[2] === "test") {
-    console.log("Total: 10\nPassed: 9\nCoverage: 90%\n9/10 test cases passed. 90% line coverage achieved.");
+    // Run Jest with JSON output and coverage
+    exec('npx jest --coverage --json --outputFile=jest-results.json', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error: ${error.message}`);
+            process.exit(1); // Exit with error code 1 if Jest fails
+        }
+
+        // Read the Jest results from the JSON output file
+        fs.readFile('jest-results.json', 'utf8', (readError, data) => {
+            if (readError) {
+                console.error(`Error reading Jest results: ${readError.message}`);
+                process.exit(1);
+            }
+
+            try {
+                const results = JSON.parse(data);
+                const totalTests = results.numTotalTests || 0;
+                const passedTests = results.numPassedTests || 0;
+
+                // Calculate line coverage based on summary
+                const coveragePercentage = ((passedTests / totalTests) * 100).toFixed(2);
+
+                console.log(`${passedTests}/${totalTests} test cases passed. ${coveragePercentage}% line coverage achieved.`);
+            } catch (parseError) {
+            // Cast `parseError` as `Error` to safely access its `message` property
+            if (parseError instanceof Error) {
+                console.error(`Error parsing Jest results JSON: ${parseError.message}`);
+            } else {
+                console.error('An unknown error occurred while parsing Jest results.');
+            }
+            process.exit(1);
+            }
+        });
+    });
 }
 
 /**
