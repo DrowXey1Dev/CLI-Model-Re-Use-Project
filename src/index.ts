@@ -69,6 +69,7 @@ else if (process.argv[2] === "test") {
             }
         });
     });
+    process.exit(0);
 }
 
 /**
@@ -83,7 +84,8 @@ else {
     }
 
     // Get the path to the URL file provided as an argument
-    const urlFilePath = path.join(process.cwd(), String(process.argv[2])); // Use the current working directory
+    //const urlFilePath = path.join(process.cwd(), String(process.argv[2])); // Use the current working directory
+    const urlFilePath = String(process.argv[2])
 
     // Check if the file exists before processing
     if (!fs.existsSync(urlFilePath)) {
@@ -92,5 +94,10 @@ else {
     }
 
     // Parse the file and calculate metrics
-    parseUrlFile(urlFilePath);
+    parseUrlFile(urlFilePath).then(() => {
+        process.exit(0);
+    }).catch(error => {
+        console.error('Error parsing URL file:', error);
+        process.exit(1); // Exit with a non-zero code on error
+    });
 }
