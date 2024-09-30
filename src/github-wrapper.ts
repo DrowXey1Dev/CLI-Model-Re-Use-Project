@@ -9,7 +9,8 @@ import { getGithubLink } from './Util/npmUtil';
 import * as Util from './Util';
 import * as API from './api-calls/github-adapter';
 
-import axios from 'axios';
+import fetch from 'node-fetch';
+
 import fs from 'fs';
 
 if (!Util.Constants.GITHUB_TOKEN) {
@@ -39,7 +40,7 @@ function parseGithubUrl(url: string): { owner: string, repo: string } | null {
 export async function calculateMetricsForRepo(url: string): Promise<string> {
   // Parse the owner and repo from the URL
   const githubUrl = getGithubLink(url);
-  const repoInfo = parseGithubUrl(githubUrl);
+  const repoInfo = parseGithubUrl(await githubUrl);
 
   if (!repoInfo) {
     return `Invalid URL: ${githubUrl}`;
@@ -73,21 +74,7 @@ export async function calculateMetricsForRepo(url: string): Promise<string> {
           maintainResponsiveness.output
      ));
 
-    const result = `{
-      "URL": "${url}", 
-      "NetScore": "${Number(netScore.output.toPrecision(5))}", 
-      "NetScore_Latency": ${Number(netScore.time.toPrecision(5))}, 
-      "RampUp": ${Number(rampUpScore.output.toPrecision(5))}, 
-      "RampUp_Latency": ${Number(rampUpScore.time.toPrecision(5))}, 
-      "Correctness": ${Number(correctness.output.toPrecision(5))}, 
-      "Correctness_Latency": ${Number(correctness.time.toPrecision(5))}, 
-      "BusFactor": ${Number(busFactor.output.toPrecision(5))}, 
-      "BusFactor_Latency": ${Number(busFactor.time.toPrecision(5))}, 
-      "ResponsiveMaintainer": ${Number(maintainResponsiveness.output.toPrecision(5))}, 
-      "ResponsiveMaintainer_Latency": ${Number(maintainResponsiveness.time.toPrecision(5))}, 
-      "License": "${Number(retrievedLicense.output)}", 
-      "License_Latency": ${Number(retrievedLicense.time.toPrecision(5))}
-    }`;
+    const result = `{"URL": "${url}", "NetScore": "${Number(netScore.output.toPrecision(5))}", "NetScore_Latency": ${Number(netScore.time.toPrecision(5))}, "RampUp": ${Number(rampUpScore.output.toPrecision(5))}, "RampUp_Latency": ${Number(rampUpScore.time.toPrecision(5))}, "Correctness": ${Number(correctness.output.toPrecision(5))}, "Correctness_Latency": ${Number(correctness.time.toPrecision(5))}, "BusFactor": ${Number(busFactor.output.toPrecision(5))}, "BusFactor_Latency": ${Number(busFactor.time.toPrecision(5))}, "ResponsiveMaintainer": ${Number(maintainResponsiveness.output.toPrecision(5))}, "ResponsiveMaintainer_Latency": ${Number(maintainResponsiveness.time.toPrecision(5))}, "License": "${Number(retrievedLicense.output)}", "License_Latency": ${Number(retrievedLicense.time.toPrecision(5))}}`;
 
     return result;
   } catch (error) {
@@ -105,25 +92,32 @@ export async function calculateMetricsForRepo(url: string): Promise<string> {
  */
 async function fetchRepoLicense(owner: string, repo: string) {
   try {
-      const response = await axios.get(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/license`, {
-          headers: {
-              Authorization: `token ${Util.Constants.GITHUB_TOKEN}`,
-          },
-      });
-      //check to see if the license is compatible or not
-      if(String(response.data.license.name) != 'Other'){
-        //if the license is NOT equal to "other" then it is compatible and so return a 1
-        return 1;
-      }else{
-        //if the license is equal to "other" then return 0, since the license is not compatible
-        return 0;
-      }
-      //return response.data.license;
+    const response = await fetch(`${Util.Constants.GITHUB_API_BASE_URL}/repos/${owner}/${repo}/license`, {
+      headers: {
+        Authorization: `token ${Util.Constants.GITHUB_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Check to see if the license is compatible or not
+    if (String(data.license.name) !== 'Other') {
+      // If the license is NOT equal to "Other", then it is compatible and return 1
+      return 1;
+    } else {
+      // If the license is equal to "Other", return 0, since the license is not compatible
+      return 0;
+    }
   } catch (error) {
-      console.error(`ERROR! Failed to retrieve license information for ${owner}/${repo}: ${error}`);
-      throw error;
+    console.error(`ERROR! Failed to retrieve license information for ${owner}/${repo}: ${error}`);
+    throw error;
   }
 }
+
 
 /**
  * Parse a file containing URLs and calculate metrics for each repository.
@@ -149,4 +143,5 @@ export async function parseUrlFile(filepath: string) {
     console.log(result);
     fs.appendFileSync(`${filepath}.NDJSON`, `${result}\n`);
   }
+  process.exit(0);
 }

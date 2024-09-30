@@ -1,5 +1,3 @@
-import axios from "axios";
-import * as Util from './Util';
 import { commitHistory, repoIssues, repoPullRequests } from "./api-calls/github-adapter";
 
 /**

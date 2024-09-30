@@ -1,4 +1,4 @@
-import request from 'sync-request';
+import fetch from 'node-fetch';
 
 /**
  * Checks whether the provided URL is a valid npm package link.
@@ -19,14 +19,19 @@ function isNpmLink(url: string): boolean {
  * @param url - The npm or GitHub URL to process.
  * @returns The GitHub repository URL if found, or the original URL if it is not an npm link or no repository is found.
  */
-export function getGithubLink(url: string): string {
+export async function getGithubLink(url: string): Promise<string> {
     if (isNpmLink(url)) {
         const packageName = url.split('/').pop(); // Extract package name from the URL
 
         try {
             // Fetch the package details from the npm registry
-            const res = request('GET', `https://registry.npmjs.org/${packageName}`);
-            const packageData = JSON.parse(res.getBody('utf8'));
+            const response = await fetch(`https://registry.npmjs.org/${packageName}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const packageData = await response.json();
 
             // Extract the GitHub repository URL if it exists
             let repositoryUrl = packageData.repository?.url;
@@ -60,3 +65,4 @@ export function getGithubLink(url: string): string {
     }
     return url;
 }
+
